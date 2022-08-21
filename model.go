@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type notworn struct {
+type NotWorn struct {
 	Title       string         `json:"title"`
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	Description string         `json:"description"`
