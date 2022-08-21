@@ -12,7 +12,15 @@ func main() {
 	}
 	db, err := ConnectDataBase()
 	if err != nil {
-		log.Fatalln("error was:", db.Error)
+		log.Fatalln("error was:", err)
+	}
+
+	server := NewServer(db)
+	server.InitRoutes()
+	err = server.Router.Run()
+
+	if err != nil {
+		log.Fatalln("error was:", err)
 	}
 
 }
