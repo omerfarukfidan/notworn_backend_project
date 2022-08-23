@@ -28,6 +28,8 @@ func (s *Server) InitRoutes() {
 	s.Router.POST("", s.CreateNotWornHandler)
 	s.Router.PUT("/notworn/:id", s.AddImageHandler)
 	s.Router.GET("", s.ListAllHandler)
+	s.Router.GET("/notworn/:id", s.GetNotWornByIdHandler)
+	s.Router.Static("/images", "./assets")
 }
 
 func (s *Server) CreateNotWornHandler(c *gin.Context) {
@@ -47,7 +49,27 @@ func (s *Server) CreateNotWornHandler(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusCreated, notworn)
+	file, _ := c.FormFile("image")
+	// Upload the file to specific dst.
+	fileName := fmt.Sprintf("%d-%s", notworn.ID, file.Filename)
+	err = c.SaveUploadedFile(file, "./assets/"+fileName)
+	if err != nil {
+		// If any error occurs; we must delete created product
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+
+		return
+	}
+
+	// Update image path of the product
+	notworn.ImagePath = "/images/" + fileName
+	err = s.DB.Save(&notworn).Error
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, &notworn)
 
 }
 
@@ -95,4 +117,16 @@ func (s *Server) ListAllHandler(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusAccepted, allNotWorn)
 
+}
+
+func (s *Server) GetNotWornByIdHandler(c *gin.Context) {
+
+	id := c.Params.ByName("id")
+	intVar, err := strconv.Atoi(id)
+	notworn, err := GetNotWorn(s.DB, intVar)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "unknown error")
+		return
+	}
+	c.IndentedJSON(http.StatusAccepted, &notworn)
 }

@@ -17,6 +17,7 @@ type NotWorn struct {
 	Location    string         `form:"location"`
 	Email       string         `form:"email"`
 	FileName    string         `form:"filename"`
+	ImagePath   string         `form:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" form:"deleted_at"`
 	CreateAt    time.Time      `form:"created_at"`
 	UpdatedAt   time.Time      `form:"updated_At"`
