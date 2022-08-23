@@ -27,6 +27,7 @@ func NewServer(db *gorm.DB) *Server {
 func (s *Server) InitRoutes() {
 	s.Router.POST("", s.CreateNotWornHandler)
 	s.Router.PUT("/notworn/:id", s.AddImageHandler)
+	s.Router.GET("", s.ListAllHandler)
 }
 
 func (s *Server) CreateNotWornHandler(c *gin.Context) {
@@ -61,19 +62,19 @@ func (s *Server) AddImageHandler(c *gin.Context) {
 	id := c.Params.ByName("id")
 	intVar, err := strconv.Atoi(id)
 	obj, err := GetNotWorn(s.DB, intVar)
-	fmt.Println(obj)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
 	}
 
-	WriteFileName(s.DB, &obj, &userObj)
+	err = WriteFileName(s.DB, &obj, &userObj)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
 	}
 
-	err = c.SaveUploadedFile(userObj.Avatar, "assets/"+userObj.Avatar.Filename)
+	stringID := fmt.Sprintf("%d", obj.ID)
+	err = c.SaveUploadedFile(userObj.Avatar, "assets/"+stringID+userObj.Avatar.Filename)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
@@ -83,5 +84,15 @@ func (s *Server) AddImageHandler(c *gin.Context) {
 		"status": "ok",
 		"data":   userObj,
 	})
+
+}
+
+func (s *Server) ListAllHandler(c *gin.Context) {
+	allNotWorn, err := ListAllNotWorn(s.DB)
+	if err = c.ShouldBind(&allNotWorn); err != nil {
+		c.String(http.StatusBadRequest, "bad request")
+		return
+	}
+	c.IndentedJSON(http.StatusAccepted, allNotWorn)
 
 }

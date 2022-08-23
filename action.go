@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 	"log"
 )
@@ -18,16 +19,28 @@ func GetNotWorn(db *gorm.DB, id any) (NotWorn, error) {
 	err := db.First(&notworn, id).Error
 
 	if err != nil {
-		log.Println("Error occurred (GetTodo): ", err)
+		log.Println("Error occurred ( GetNotWorn): ", err)
 	}
 
 	return notworn, err
 }
 
 func WriteFileName(db *gorm.DB, obj *NotWorn, userObj *file) error {
-	err := db.Model(&obj).Update("file_name", userObj.Avatar.Filename).Error
+	stringID := fmt.Sprintf("%d", obj.ID)
+	err := db.Model(&obj).Update("file_name", stringID+userObj.Avatar.Filename).Error
 	if err != nil {
-		log.Println("Error occurred : ", err)
+		log.Println("Error occurred (WriteFileName) : ", err)
 	}
 	return err
+}
+
+func ListAllNotWorn(db *gorm.DB) ([]NotWorn, error) {
+	var notworn []NotWorn
+	err := db.Find(&notworn).Error
+
+	if err != nil {
+		log.Println("Error occurred (ListAllNotWorn): ", err)
+	}
+
+	return notworn, err
 }
