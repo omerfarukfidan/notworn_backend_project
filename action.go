@@ -44,3 +44,12 @@ func ListAllNotWorn(db *gorm.DB) ([]NotWorn, error) {
 
 	return notworn, err
 }
+
+func HardDeleteNotWorn(db *gorm.DB, id any) error {
+	obj, err := GetNotWorn(db, id)
+	if err != nil {
+		log.Println("Error occurred: ", err)
+	}
+	db.Unscoped().Delete(obj)
+	return err
+}
