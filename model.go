@@ -13,14 +13,12 @@ type NotWorn struct {
 	Condition   string         `form:"condition"`
 	Price       uint           `form:"price"`
 	CompanyName string         `form:"companyName"`
-	TaskForce   string         `form:"taskForce"`
 	Location    string         `form:"location"`
-	Email       string         `form:"email"`
 	FileName    string         `form:"filename"`
 	ImagePath   string         `form:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" form:"deleted_at"`
 	CreateAt    time.Time      `form:"created_at"`
-	UpdatedAt   time.Time      `form:"updated_At"`
+	UpdatedAt   time.Time      `form:"updated_at"`
 }
 type file struct {
 	ID     uint                  `form:"id"`

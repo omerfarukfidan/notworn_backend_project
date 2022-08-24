@@ -30,6 +30,7 @@ func (s *Server) InitRoutes() {
 	s.Router.GET("", s.ListAllHandler)
 	s.Router.GET("/notworn/:id", s.GetNotWornByIdHandler)
 	s.Router.DELETE("/:id", s.DeleteNotWornHandler)
+	s.Router.PATCH("/:id", s.UpdateNotWornHandler)
 	s.Router.Static("/images", "./assets")
 }
 
@@ -51,8 +52,14 @@ func (s *Server) CreateNotWornHandler(c *gin.Context) {
 	}
 
 	file, _ := c.FormFile("image")
+	err = s.DB.Model(&notworn).Update("file_name", file.Filename).Error
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "error", "error": err.Error()})
+		return
+	}
+
 	// Upload the file to specific dst.
-	fileName := fmt.Sprintf("%d-%s", notworn.ID, file.Filename)
+	fileName := fmt.Sprintf("%d_%s", notworn.ID, file.Filename)
 	err = c.SaveUploadedFile(file, "./assets/"+fileName)
 	if err != nil {
 		// If any error occurs; we must delete created product
@@ -83,8 +90,8 @@ func (s *Server) AddImageHandler(c *gin.Context) {
 	}
 
 	id := c.Params.ByName("id")
-	intVar, err := strconv.Atoi(id)
-	obj, err := GetNotWorn(s.DB, intVar)
+	intId, err := strconv.Atoi(id)
+	obj, err := GetNotWorn(s.DB, intId)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
@@ -123,8 +130,8 @@ func (s *Server) ListAllHandler(c *gin.Context) {
 func (s *Server) GetNotWornByIdHandler(c *gin.Context) {
 
 	id := c.Params.ByName("id")
-	intVar, err := strconv.Atoi(id)
-	notworn, err := GetNotWorn(s.DB, intVar)
+	intId, err := strconv.Atoi(id)
+	notworn, err := GetNotWorn(s.DB, intId)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
@@ -134,8 +141,8 @@ func (s *Server) GetNotWornByIdHandler(c *gin.Context) {
 
 func (s *Server) DeleteNotWornHandler(c *gin.Context) {
 	id := c.Params.ByName("id")
-	intVar, err := strconv.Atoi(id)
-	err = HardDeleteNotWorn(s.DB, intVar)
+	intId, err := strconv.Atoi(id)
+	err = HardDeleteNotWorn(s.DB, intId)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
@@ -144,4 +151,24 @@ func (s *Server) DeleteNotWornHandler(c *gin.Context) {
 		"status": "deleted ",
 	})
 
+}
+
+func (s *Server) UpdateNotWornHandler(c *gin.Context) {
+
+	var notworn NotWorn
+	err := c.ShouldBind(&notworn)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "unknown error", err)
+		return
+	}
+
+	id := c.Params.ByName("id")
+	intId, err := strconv.Atoi(id)
+	obj, err := UpdateNotWorn(s.DB, intId, &notworn)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "unknown error", err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, &obj)
 }
