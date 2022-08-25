@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -90,8 +92,7 @@ func (s *Server) AddImageHandler(c *gin.Context) {
 	}
 
 	id := c.Params.ByName("id")
-	intId, err := strconv.Atoi(id)
-	obj, err := GetNotWorn(s.DB, intId)
+	obj, err := GetNotWorn(s.DB, id)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
@@ -130,8 +131,7 @@ func (s *Server) ListAllHandler(c *gin.Context) {
 func (s *Server) GetNotWornByIdHandler(c *gin.Context) {
 
 	id := c.Params.ByName("id")
-	intId, err := strconv.Atoi(id)
-	notworn, err := GetNotWorn(s.DB, intId)
+	notworn, err := GetNotWorn(s.DB, id)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "unknown error")
 		return
@@ -156,19 +156,28 @@ func (s *Server) DeleteNotWornHandler(c *gin.Context) {
 func (s *Server) UpdateNotWornHandler(c *gin.Context) {
 
 	var notworn NotWorn
-	err := c.ShouldBind(&notworn)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "unknown error", err)
-		return
-	}
 
 	id := c.Params.ByName("id")
-	intId, err := strconv.Atoi(id)
-	obj, err := UpdateNotWorn(s.DB, intId, &notworn)
+
+	var updateFields map[string]interface{}
+
+	data, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "unknown error", err)
+		c.String(http.StatusInternalServerError, "read error", err)
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, &obj)
+	err = json.Unmarshal(data, &updateFields)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "json.Unmarshall error", err)
+		return
+	}
+
+	err = s.DB.Debug().Model(&NotWorn{}).Where("id = ?", id).Updates(&updateFields).Take(&notworn).Error
+	if err != nil {
+		c.String(http.StatusInternalServerError, "update error: ", err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, &notworn)
 }

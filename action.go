@@ -53,23 +53,3 @@ func HardDeleteNotWorn(db *gorm.DB, id any) error {
 	db.Unscoped().Delete(obj)
 	return err
 }
-
-func UpdateNotWorn(db *gorm.DB, id any, notworn *NotWorn) (NotWorn, error) {
-	obj, err := GetNotWorn(db, id)
-	if err != nil {
-		log.Println("NotWorn item couldn't find! (UpdateNotWorn)", err)
-	}
-	err = db.Model(&obj).Updates(map[string]interface{}{"title": &notworn.Title, "description": &notworn.Description, "company_name": &notworn.CompanyName, "condition": &notworn.Condition, "price": &notworn.Price, "location": &notworn.Location}).Error
-	if err != nil {
-		log.Println("Error occurred (UpdateNotWorn):  ", err)
-	}
-	/*
-		err = db.Model(&obj).Updates(&updatedFields).Error
-		if err != nil {
-			log.Println("Error occurred (UpdateNotWorn):  ", err)
-		}
-
-	*/
-	//"title": notworn.Title, "description": notworn.Description, "company_name": notworn.CompanyName, "condition": notworn.Condition, "price": notworn.Price, "location": notworn.Location, "deleted_at": notworn.DeletedAt, "updated_at": notworn.UpdatedAt
-	return obj, err
-}
