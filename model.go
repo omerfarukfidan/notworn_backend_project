@@ -11,7 +11,7 @@ type NotWorn struct {
 	ID          uint           `gorm:"primaryKey" form:"id"`
 	Description string         `form:"description"`
 	Condition   string         `form:"condition"`
-	Price       uint           `form:"price"`
+	Price       float64        `form:"price"`
 	CompanyName string         `form:"companyName"`
 	Location    string         `form:"location"`
 	FileName    string         `form:"filename"`
