@@ -7,20 +7,21 @@ import (
 )
 
 type NotWorn struct {
-	Title       string         `form:"title"`
-	ID          uint           `gorm:"primaryKey" form:"id"`
-	Description string         `form:"description"`
-	Condition   string         `form:"condition"`
-	Price       float64        `form:"price"`
-	CompanyName string         `form:"companyName"`
-	Location    string         `form:"location"`
-	FileName    string         `form:"filename"`
-	ImagePath   string         `form:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" form:"deleted_at"`
-	CreateAt    time.Time      `form:"created_at"`
-	UpdatedAt   time.Time      `form:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" form:"deleted_at"` // 32 Bytes
+	CreateAt    time.Time      `form:"created_at"`              // 24 Bytes
+	UpdatedAt   time.Time      `form:"updated_at"`              // 24 Bytes
+	Title       string         `form:"title"`                   // 16 Bytes
+	Description string         `form:"description"`             // 16 Bytes
+	Condition   string         `form:"condition"`               // 16 Bytes
+	CompanyName string         `form:"companyName"`             // 16 Bytes
+	Location    string         `form:"location"`                // 16 Bytes
+	FileName    string         `form:"filename"`                // 16 Bytes
+	ImagePath   string         `form:"-"`                       // 16 Bytes
+	ID          uint           `gorm:"primaryKey" form:"id"`    // 8 Bytes
+	Price       float64        `form:"price"`                   // 8 Bytes
+
 }
 type file struct {
-	ID     uint                  `form:"id"`
-	Avatar *multipart.FileHeader `form:"avatar" binding:"required"`
+	ID     uint                  `form:"id"`                        // 8 Bytes
+	Avatar *multipart.FileHeader `form:"avatar" binding:"required"` // 8 Bytes
 }
