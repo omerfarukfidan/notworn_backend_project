@@ -31,8 +31,10 @@ func (s *Server) InitRoutes() {
 	s.Router.PUT("/notworn/:id", s.AddImageHandler)
 	s.Router.GET("", s.ListAllHandler)
 	s.Router.GET("/notworn/:id", s.GetNotWornByIdHandler)
-	s.Router.DELETE("/:id", s.DeleteNotWornHandler)
 	s.Router.PATCH("/:id", s.UpdateNotWornHandler)
+	s.Router.DELETE("/hard/:id", s.HardDeleteNotWornHandler)
+	s.Router.DELETE("/:id", s.DeleteNotWornHandler)
+
 	s.Router.Static("/images", "./assets")
 }
 
@@ -139,7 +141,7 @@ func (s *Server) GetNotWornByIdHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, &notworn)
 }
 
-func (s *Server) DeleteNotWornHandler(c *gin.Context) {
+func (s *Server) HardDeleteNotWornHandler(c *gin.Context) {
 	id := c.Params.ByName("id")
 	intId, err := strconv.Atoi(id)
 	err = HardDeleteNotWorn(s.DB, intId)
@@ -148,7 +150,20 @@ func (s *Server) DeleteNotWornHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"status": "deleted ",
+		"status": id + " hard deleted ",
+	})
+
+}
+func (s *Server) DeleteNotWornHandler(c *gin.Context) {
+	id := c.Params.ByName("id")
+	intId, err := strconv.Atoi(id)
+	err = DeleteNotWorn(s.DB, intId)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "unknown error")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": id + " soft deleted ",
 	})
 
 }
